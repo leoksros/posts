@@ -2,7 +2,11 @@
 
 namespace App\Http\Controllers;
 
+use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 use Illuminate\Http\Request;
+use App\Models\Post;
+use App\Models\Category;
 
 class PostController extends Controller
 {
@@ -13,7 +17,11 @@ class PostController extends Controller
      */
     public function index()
     {
-        //
+        return view('posts.list',
+	
+      [ 'posts' => Post::all(),
+      ]);
+
     }
 
     /**
@@ -23,7 +31,9 @@ class PostController extends Controller
      */
     public function create()
     {
-        //
+        return view('posts.create', [
+            'categories' => Category::all()
+        ]);
     }
 
     /**
@@ -34,7 +44,20 @@ class PostController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        $this->validatePost();
+        
+        $path = $request->file("image")->store("public");
+        $img_name = basename($path);
+
+        Post::create([
+            'title' => $request->title,
+            'content' => $request->content,
+            'image' => $img_name,
+            'category_id' => $request->category_id,
+            'user_id' => Auth::user()->id
+        ]);
+
+        return redirect()->route('index.posts')->with('status','Post created.');
     }
 
     /**
@@ -80,5 +103,14 @@ class PostController extends Controller
     public function destroy($id)
     {
         //
+    }
+
+    public function validatePost()
+    {       
+        return request()->validate([
+            'title' => 'required|min:3|max:255',
+            'image' => 'required|image|mimes:jpeg,png,jpg',
+            'content' => 'required|min:3|max:255'
+        ]);
     }
 }
