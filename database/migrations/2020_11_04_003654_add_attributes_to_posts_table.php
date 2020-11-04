@@ -14,12 +14,15 @@ class AddAttributesToPostsTable extends Migration
     public function up()
     {
         Schema::table('posts', function (Blueprint $table) {
-            $table->string('title',100)->unsigned();
-            $table->string('image',100);
-            $table->bigInteger('category_id')->unsigned();
-            $table->bigInteger('user_id')->unsigned();
+
+            $table->string('title',255)->nullable($value = false);
+            $table->string('image',255);
+            $table->string('content',255)->nullable($value = false);
+            $table->bigInteger('category_id')->unsigned()->nullable($value = false);
+            $table->bigInteger('user_id')->unsigned()->nullable($value = false);
             $table->foreign('category_id')->references('id')->on('categories');
             $table->foreign('user_id')->references('id')->on('users');
+            
         });
     }
 

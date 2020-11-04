@@ -14,7 +14,9 @@ class AddAttributesToCategoriesTable extends Migration
     public function up()
     {
         Schema::table('categories', function (Blueprint $table) {
-            $table->string('name',50)->unsigned();
+
+            $table->string('name',255)->nullable($value = false);
+            
         });
     }
 
