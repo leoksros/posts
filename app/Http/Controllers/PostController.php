@@ -15,11 +15,20 @@ class PostController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
+
+    public function __construct()
+    {
+        $this->middleware('auth')->only('create');
+        $this->middleware('owner')->only('edit','update','destroy');
+
+    }
+
+    
     public function index()
     {
         return view('posts.list',
 	
-      [ 'posts' => Post::all(),
+      [ 'posts' => Post::orderBy('created_at','desc')->get()
       ]);
 
     }
@@ -49,7 +58,7 @@ class PostController extends Controller
         $path = $request->file("image")->store("public");
         $img_name = basename($path);
 
-        Post::create([
+        $post = Post::create([
             'title' => $request->title,
             'content' => $request->content,
             'image' => $img_name,
@@ -57,7 +66,7 @@ class PostController extends Controller
             'user_id' => Auth::user()->id
         ]);
 
-        return redirect()->route('index.posts')->with('status','Post created.');
+        return redirect()->route('posts.show',$post->id)->with('status','Post created successfully.');
     }
 
     /**
@@ -68,7 +77,11 @@ class PostController extends Controller
      */
     public function show($id)
     {
-        //
+        return view('posts.post',
+        [ 
+            'post' => Post::findOrFail($id)
+        ]);
+       
     }
 
     /**
@@ -79,7 +92,11 @@ class PostController extends Controller
      */
     public function edit($id)
     {
-        //
+        return view('posts.edit',
+        [
+            'post' => Post::findOrFail($id),
+            'categories' => Category::all()
+        ]);
     }
 
     /**
@@ -91,7 +108,17 @@ class PostController extends Controller
      */
     public function update(Request $request, $id)
     {
-        //
+       
+        request()->validate([
+            'title' => 'required|min:3|max:255',            
+            'content' => 'required|min:3|max:255'
+        ]);
+                        
+        $post = Post::findOrFail($id);
+        
+        $post->update(request()->all());
+       
+        return redirect()->route('posts.show',$id)->with('status','Post modified successfully.');
     }
 
     /**
@@ -102,7 +129,9 @@ class PostController extends Controller
      */
     public function destroy($id)
     {
-        //
+        $post = Post::findOrFail($id);
+        $post->delete();
+        return redirect()->route('posts.index')->with('status','Post deleted successfully');
     }
 
     public function validatePost()
