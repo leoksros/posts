@@ -21,7 +21,10 @@ class PostOwner
     {
         $post = Post::findOrFail(array_values($request->route()->parameters())[0]);
         
-        
+        if(Auth::guest())
+        {
+            return redirect()->route('posts.index');        
+        }
         if($post->user_id != Auth::user()->id)
         {
             return redirect()->route('posts.index');            
